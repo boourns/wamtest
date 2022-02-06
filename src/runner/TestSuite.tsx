@@ -9,10 +9,13 @@ export type TestSuiteConstructor = {
 export class TestSuite {
     tests: TestContext[]
     runner: TestRunner
+    name: string
+    renderCallback?: () => void
 
     constructor(runner: TestRunner, klass: TestSuiteConstructor) {
         this.runner = runner
         this.tests = []
+        this.name = klass.name
         this.enqueue(klass)
     }
 
@@ -30,6 +33,10 @@ export class TestSuite {
         for (let test of this.tests) {
             console.log("Running ", test.testName)
             await test.run()
+            
+            if (this.renderCallback) {
+                this.renderCallback()
+            }
         }
     }
 }

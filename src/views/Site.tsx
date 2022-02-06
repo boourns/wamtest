@@ -30,9 +30,8 @@ export class Site extends Component<any, any> {
         return ""
     }
     
-    renderRunner() {
+    renderRunner() {        
         return <TestRunnerView wamUrl={this.state.url}></TestRunnerView>;
-        
     }
 
     render() {

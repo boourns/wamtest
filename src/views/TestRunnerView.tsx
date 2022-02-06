@@ -1,7 +1,7 @@
 import { Component, h } from "preact";
 import { LoadWamTestSuite } from "../suites/LoadWamTestSuite";
 import { TestRunner } from "../runner/TestRunner";
-
+import { TestSuite } from "../runner/TestSuite";
 
 export interface TestRunnerProps {
     wamUrl: string
@@ -12,6 +12,7 @@ export class TestRunnerView extends Component<TestRunnerProps, any> {
     running: boolean
     hostGroupKey?: string
     audioContext: AudioContext
+    runner?: TestRunner
 
     constructor() {
         super()
@@ -19,26 +20,38 @@ export class TestRunnerView extends Component<TestRunnerProps, any> {
         this.audioContext = new window.AudioContext()
     }
 
-    async setup(e: HTMLDivElement | null) {
-        if (!e) {
-            return
-        }
-        this.output = e
+    async componentWillMount() {
+        let runner = new TestRunner(this.props.wamUrl, this.audioContext)
+        await runner.initializeWamEnvironment()
 
-        let tester = new TestRunner(this.props.wamUrl, this.audioContext)
-        tester.enqueue(LoadWamTestSuite)
-        tester.renderCallback = () => {
+        runner.enqueue(LoadWamTestSuite)
+        runner.renderCallback = () => {
             this.forceUpdate()
         }
 
-        await tester.run()
+        this.runner = runner
+        runner.run()
+    }
+
+    renderSuite(suite: TestSuite) {
+        let results = suite.tests.map(t => <li>{t.testName}: {t.runState}<br>{t.messages.join("<br />")}</br></li>)
+
+        return <div>
+            Suite:
+            <ol>
+                {results}
+            </ol>
+        </div>
+    }
+
+    renderSuites() {
+        return this.runner?.suites.map(suite => this.renderSuite(suite))
     }
 
     render() {
         return <div>
             <div>Testing {this.props.wamUrl}</div>
-            <div ref={(e) => this.setup(e)}></div>
-            
+            {this.renderSuites()}
         </div>
     }
 }

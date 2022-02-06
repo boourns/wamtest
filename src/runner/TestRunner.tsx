@@ -16,12 +16,9 @@ export class TestRunner {
 
         this.suites = []
         this.hostGroupKey = performance.now().toString()
-
     }
 
     async initializeWamEnvironment() {
-        this.hostGroupKey = performance.now().toString();
-
         await addFunctionModule(this.audioContext.audioWorklet, initializeWamEnv, VERSION);
         await addFunctionModule(this.audioContext.audioWorklet, initializeWamGroup, this.hostGroupId, this.hostGroupKey);
     }
@@ -31,7 +28,13 @@ export class TestRunner {
     }
 
     async run() {
+
         for (let suite of this.suites) {
+            suite.renderCallback = () => {
+                if (this.renderCallback) {
+                    this.renderCallback()
+                }
+            }
             await suite.run()
         }
     }
