@@ -1,7 +1,7 @@
 import { Component, h } from "preact";
-import { TestRunner } from "../runner/TestRunner";
 
 import styles from "./Site.scss"
+import { TestRunnerView } from "./TestRunnerView";
 
 export type HTMLInputEvent = Event & {target: HTMLInputElement | null}
 
@@ -31,7 +31,7 @@ export class Site extends Component<any, any> {
     }
     
     renderRunner() {
-        return <TestRunner wamUrl={this.state.url}></TestRunner>;
+        return <TestRunnerView wamUrl={this.state.url}></TestRunnerView>;
         
     }
 

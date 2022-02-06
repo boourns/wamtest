@@ -1,40 +1,38 @@
-import { Component, h } from "preact";
-import { LoadWamTestSuite } from "../suites/LoadWamTestSuite";
-import { Tester } from "./Tester";
+import { VERSION } from "@webaudiomodules/api"
+import { addFunctionModule, initializeWamEnv, initializeWamGroup } from "@webaudiomodules/sdk"
+import { TestSuite, TestSuiteConstructor } from "./TestSuite"
 
-export interface TestRunnerProps {
+export class TestRunner {
+    audioContext: BaseAudioContext
     wamUrl: string
-}
+    suites: TestSuite[]
+    renderCallback?: () => void
+    hostGroupKey: string
+    hostGroupId = "wamtester"
 
-export class TestRunner extends Component<TestRunnerProps, any> {
-    output?: HTMLDivElement
-    running: boolean
+    constructor(wamUrl: string, audioContext: BaseAudioContext) {
+        this.wamUrl = wamUrl
+        this.audioContext = audioContext
 
-    constructor() {
-        super()
-        this.running = false
+        this.suites = []
+        this.hostGroupKey = performance.now().toString()
+
     }
 
-    async setup(e: HTMLDivElement | null) {
-        if (!e) {
-            return
+    async initializeWamEnvironment() {
+        this.hostGroupKey = performance.now().toString();
+
+        await addFunctionModule(this.audioContext.audioWorklet, initializeWamEnv, VERSION);
+        await addFunctionModule(this.audioContext.audioWorklet, initializeWamGroup, this.hostGroupId, this.hostGroupKey);
+    }
+
+    enqueue(klass: TestSuiteConstructor) {
+        this.suites.push(new TestSuite(this, klass))
+    }
+
+    async run() {
+        for (let suite of this.suites) {
+            await suite.run()
         }
-        this.output = e
-        let audioContext = new window.AudioContext()
-
-        let tester = new Tester(this.output, audioContext)
-        
-        let suite = new LoadWamTestSuite(this.props.wamUrl, tester)
-        
-        await suite.run()
-
-    }
-
-    render() {
-        return <div>
-            <div>Testing {this.props.wamUrl}</div>
-            <div ref={(e) => this.setup(e)}></div>
-            
-        </div>
     }
 }

@@ -1,57 +1,34 @@
-import { addFunctionModule, initializeWamEnv, initializeWamGroup } from "@webaudiomodules/sdk";
-import { WebAudioModule } from "@webaudiomodules/api";
-import { VERSION } from "@webaudiomodules/api";
 
-import { Tester } from "../runner/Tester";
+import { TestContext } from "../runner/TestContext";
 
 const hostGroupId = "wamtest.info"
 
 export class LoadWamTestSuite {
     wamUrl: string
-    tester: Tester
     hostGroupKey?: string
-    wam: WebAudioModule
 
-    constructor(url: string, tester: Tester) {
+    constructor(url: string) {
         this.wamUrl = url
-        this.tester = tester
     }
 
-    async initializeWamEnvironment() {
-        this.hostGroupKey = performance.now().toString();
-
-        await addFunctionModule(this.tester.audioContext.audioWorklet, initializeWamEnv, VERSION);
-        await addFunctionModule(this.tester.audioContext.audioWorklet, initializeWamGroup, hostGroupId, this.hostGroupKey);
-    }
-
-    async testLoadsWithoutError() {
+    async testLoadsWithoutError(t: TestContext) {
         try {
-            let wam = await this.tester.loadPlugin(this.wamUrl);
+            let wam = await t.loadPlugin(this.wamUrl);
 
             if (!wam.isWebAudioModuleConstructor) {
-                this.tester.fail("wam.isWebAudioModuleConstructor should equal true")
+                t.fail("wam.isWebAudioModuleConstructor should equal true")
             }
 
-            let instance = await wam.createInstance(hostGroupId, this.tester.audioContext)
+            let instance = await wam.createInstance(t.runner.hostGroupId, t.runner.audioContext)
             if (!instance.isWebAudioModule) {
-                this.tester.fail("instance.isWebAudioModule should equal true")
+                t.fail("instance.isWebAudioModule should equal true")
             }
             let descriptor = instance.descriptor
-            this.tester.info(`Descriptor: ${JSON.stringify(descriptor)}`)
+            t.info(`Descriptor: ${JSON.stringify(descriptor)}`)
 
         }
         catch (e) {
             throw e
-        }
-    }
-
-    async run() {
-        try {
-            await this.tester.run("initializeWamEnvironment", this.initializeWamEnvironment.bind(this))
-            await this.tester.run("testLoadsWithoutError", this.testLoadsWithoutError.bind(this))
-        }
-        catch (e) {
-            this.tester.fail("Error: " + e)
         }
     }
 }
