@@ -24,7 +24,7 @@ export class LoadWamTestSuite {
                 t.fail("instance.isWebAudioModule should equal true")
             }
             let descriptor = instance.descriptor
-            t.info(`Descriptor: ${JSON.stringify(descriptor)}`)
+            t.info(`Descriptor: ${JSON.stringify(descriptor, undefined, 4)}`)
 
         }
         catch (e) {

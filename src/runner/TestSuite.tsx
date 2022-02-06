@@ -25,7 +25,7 @@ export class TestSuite {
         let instance = new klass(this.runner.wamUrl)
 
         for (let name of tests) {
-            this.tests.push(new TestContext(this.runner, name, instance[name]))
+            this.tests.push(new TestContext(this.runner, name, instance[name].bind(instance)))
         }
     }
 
@@ -33,7 +33,7 @@ export class TestSuite {
         for (let test of this.tests) {
             console.log("Running ", test.testName)
             await test.run()
-            
+
             if (this.renderCallback) {
                 this.renderCallback()
             }

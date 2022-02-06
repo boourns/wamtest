@@ -2,6 +2,7 @@ import { Component, h } from "preact";
 import { LoadWamTestSuite } from "../suites/LoadWamTestSuite";
 import { TestRunner } from "../runner/TestRunner";
 import { TestSuite } from "../runner/TestSuite";
+import { TestResultView } from "./TestResultView";
 
 export interface TestRunnerProps {
     wamUrl: string
@@ -20,7 +21,7 @@ export class TestRunnerView extends Component<TestRunnerProps, any> {
         this.audioContext = new window.AudioContext()
     }
 
-    async componentWillMount() {
+    async componentDidMount() {
         let runner = new TestRunner(this.props.wamUrl, this.audioContext)
         await runner.initializeWamEnvironment()
 
@@ -34,13 +35,13 @@ export class TestRunnerView extends Component<TestRunnerProps, any> {
     }
 
     renderSuite(suite: TestSuite) {
-        let results = suite.tests.map(t => <li>{t.testName}: {t.runState}<br>{t.messages.join("<br />")}</br></li>)
+        let results = suite.tests.map(t => <TestResultView test={t}></TestResultView>)
 
         return <div>
-            Suite:
-            <ol>
-                {results}
-            </ol>
+            Suite: {suite.name}
+            <div>
+             {results}
+            </div>
         </div>
     }
 

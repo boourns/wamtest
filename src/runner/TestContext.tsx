@@ -66,6 +66,8 @@ export class TestContext {
     }
 
     async loadPlugin(pluginUrl: string): Promise<typeof WebAudioModule> {
+        debugger
+        
         try {
             // CACHEBUSTING
             let url = `${pluginUrl}?v=${Math.random().toString(16).substr(2)}`
