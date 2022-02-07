@@ -1,12 +1,12 @@
 import { WebAudioModule } from "@webaudiomodules/api"
-import { TestRunner } from "./TestRunner"
+import { TestSuite } from "../suites/TestSuite"
 
 export type TestResultMessage = {
     level: TestMessageLevel
     message?: string
 }
 
-type RunState = "WAITING" | "RUNNING" | "RAN"
+type RunState = "WAITING" | "RUNNING" | "SUCCESS" | "FAIL" | "WARN"
 type TestMessageLevel = "INFO" | "FAIL" | "ERROR" | "WARN"
 
 export class TestContext {
@@ -16,10 +16,10 @@ export class TestContext {
     test: (t: TestContext) => Promise<void>
     runState: RunState
     renderCallback?: () => void
-    runner: TestRunner
+    suite: TestSuite
 
-    constructor(runner: TestRunner, testName: string, test: (t: TestContext) => Promise<void>) {
-        this.runner = runner
+    constructor(suite: TestSuite, testName: string, test: (t: TestContext) => Promise<void>) {
+        this.suite = suite
         this.testName = testName
         this.messages = []
         this.test = test
@@ -44,20 +44,6 @@ export class TestContext {
         }
     }
 
-    async run() {
-        try {
-            this.runState = "RUNNING"
-
-            await this.test(this)
-        }
-        catch(e) {
-            this.fail(e as string)
-        }
-        finally {
-            this.runState = "RAN"
-        }
-    }
-
     setRunState(state: RunState) {
         this.runState = state
         if (this.renderCallback) {
@@ -65,9 +51,27 @@ export class TestContext {
         }
     }
 
+    async run() {
+        try {
+            this.setRunState("RUNNING")
+
+            await this.test(this)
+        }
+        catch(e) {
+            this.fail(e as string)
+        }
+        finally {
+            if (this.messages.some((m => m.level == "FAIL" || m.level == "ERROR"))) {
+                this.setRunState("FAIL")
+            } else if (this.messages.some((m => m.level == "WARN"))) {
+                this.setRunState("WARN")
+            } else {
+                this.setRunState("SUCCESS")
+            }
+        }
+    }
+
     async loadPlugin(pluginUrl: string): Promise<typeof WebAudioModule> {
-        debugger
-        
         try {
             // CACHEBUSTING
             let url = `${pluginUrl}?v=${Math.random().toString(16).substr(2)}`
@@ -83,6 +87,22 @@ export class TestContext {
             this.fail(e as string)
             throw e
         }
+    }
+
+    async createInstance(): Promise<WebAudioModule> {
+        let wam = await this.loadPlugin(this.suite.runner.wamUrl);
+
+        if (!wam.isWebAudioModuleConstructor) {
+            this.fail("wam.isWebAudioModuleConstructor should equal true")
+            throw new Error("wam.isWebAudioModuleConstructor should equal true")
+        }
+
+        let instance = await wam.createInstance(this.suite.runner.hostGroupId, this.suite.audioContext)
+        if (!instance.isWebAudioModule) {
+            this.fail("instance.isWebAudioModule should equal true")
+            throw new Error("instance.isWebAudioModule should equal true")
+        }
+        return instance
     }
 }
 

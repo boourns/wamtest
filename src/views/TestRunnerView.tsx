@@ -1,11 +1,17 @@
 import { Component, h } from "preact";
 import { LoadWamTestSuite } from "../suites/LoadWamTestSuite";
+import { DescriptorTestSuite } from "../suites/DescriptorTestSuite";
+
 import { TestRunner } from "../runner/TestRunner";
-import { TestSuite } from "../runner/TestSuite";
+import { TestSuite } from "../suites/TestSuite";
 import { TestResultView } from "./TestResultView";
 
 export interface TestRunnerProps {
     wamUrl: string
+}
+
+type TestRunnerState = {
+    expanded: boolean
 }
 
 export class TestRunnerView extends Component<TestRunnerProps, any> {
@@ -19,13 +25,17 @@ export class TestRunnerView extends Component<TestRunnerProps, any> {
         super()
         this.running = false
         this.audioContext = new window.AudioContext()
+        this.state = {
+            expanded: true
+        }
     }
 
     async componentDidMount() {
         let runner = new TestRunner(this.props.wamUrl, this.audioContext)
-        await runner.initializeWamEnvironment()
 
         runner.enqueue(LoadWamTestSuite)
+        runner.enqueue(DescriptorTestSuite)
+
         runner.renderCallback = () => {
             this.forceUpdate()
         }
@@ -38,9 +48,9 @@ export class TestRunnerView extends Component<TestRunnerProps, any> {
         let results = suite.tests.map(t => <TestResultView test={t}></TestResultView>)
 
         return <div>
-            Suite: {suite.name}
-            <div>
-             {results}
+            <b>Suite: {suite.name}</b>
+            <div style="padding-left: 20px; padding-top: 5px;">
+             {this.state.expanded && results}
             </div>
         </div>
     }

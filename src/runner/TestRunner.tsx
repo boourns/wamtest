@@ -1,9 +1,7 @@
-import { VERSION } from "@webaudiomodules/api"
-import { addFunctionModule, initializeWamEnv, initializeWamGroup } from "@webaudiomodules/sdk"
-import { TestSuite, TestSuiteConstructor } from "./TestSuite"
+
+import { TestSuite, TestSuiteConstructor } from "../suites/TestSuite"
 
 export class TestRunner {
-    audioContext: BaseAudioContext
     wamUrl: string
     suites: TestSuite[]
     renderCallback?: () => void
@@ -12,15 +10,9 @@ export class TestRunner {
 
     constructor(wamUrl: string, audioContext: BaseAudioContext) {
         this.wamUrl = wamUrl
-        this.audioContext = audioContext
 
         this.suites = []
         this.hostGroupKey = performance.now().toString()
-    }
-
-    async initializeWamEnvironment() {
-        await addFunctionModule(this.audioContext.audioWorklet, initializeWamEnv, VERSION);
-        await addFunctionModule(this.audioContext.audioWorklet, initializeWamGroup, this.hostGroupId, this.hostGroupKey);
     }
 
     enqueue(klass: TestSuiteConstructor) {

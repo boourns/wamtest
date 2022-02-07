@@ -8,6 +8,7 @@
     "@webaudiomodules/sdk": "webaudiomodules/sdk#commit=810ba256f58385c0d50c16e36c82c7818bd01ead",
     "autoprefixer": "^10.1.0",
     "deep-diff": "^1.0.2",
+    "joi": "^17.6.0",
     "preact": "^10.5.5",
     "tailwindcss": "^2.0.2",
     "wam-extensions": "^0.1.11"
@@ -28,8 +29,9 @@
     "webpack-cli": "^4.3.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "./node_modules/.bin/webpack",
+    "watch": "./node_modules/.bin/webpack -w"
   },
-  "author": "tom burns",
+  "author": "Tom Burns",
   "license": "MIT"
 }
