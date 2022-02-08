@@ -2,6 +2,7 @@ import { TestContext } from "../runner/TestContext";
 import { TestRunner } from "../runner/TestRunner";
 import { VERSION } from "@webaudiomodules/api"
 import { addFunctionModule, initializeWamEnv, initializeWamGroup } from "@webaudiomodules/sdk"
+import { addTestBridge, TestBridgeNode } from "../helpers/AudioThreadTestBridge";
 
 export type TestSuiteConstructor = { 
     new (wamUrl: string): any 
@@ -9,11 +10,12 @@ export type TestSuiteConstructor = {
 };
 
 export class TestSuite {
-    audioContext!: BaseAudioContext
+    audioContext!: AudioContext
     tests: TestContext[]
     runner: TestRunner
     name: string
     renderCallback?: () => void
+    bridge!: TestBridgeNode
 
     constructor(runner: TestRunner, klass: TestSuiteConstructor) {
         this.runner = runner
@@ -25,6 +27,10 @@ export class TestSuite {
     async initializeWamEnvironment() {
         await addFunctionModule(this.audioContext!.audioWorklet, initializeWamEnv, VERSION);
         await addFunctionModule(this.audioContext!.audioWorklet, initializeWamGroup, this.runner.hostGroupId, this.runner.hostGroupKey);
+        await addFunctionModule(this.audioContext!.audioWorklet, addTestBridge);
+        this.bridge = new TestBridgeNode(this.audioContext!)
+        
+        await this.bridge.initialize()
     }
 
     enqueue(klass: TestSuiteConstructor) {

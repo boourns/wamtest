@@ -1,4 +1,5 @@
 import { WebAudioModule } from "@webaudiomodules/api"
+import { addFunctionModule } from "@webaudiomodules/sdk"
 import { TestSuite } from "../suites/TestSuite"
 
 export type TestResultMessage = {
@@ -93,6 +94,10 @@ export class TestContext {
             this.fail(e as string)
             throw e
         }
+    }
+
+    async runOnAudioThread(code: () => any) {
+        return await this.suite.bridge.runCodeOnAudioThread(code)
     }
 
     async createInstance(): Promise<WebAudioModule> {
