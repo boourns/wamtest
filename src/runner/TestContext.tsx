@@ -37,6 +37,12 @@ export class TestContext {
         this.msg("FAIL", message)
     }
 
+    warn(message: string) {
+        console.error(message)
+
+        this.msg("WARN", message)
+    }
+
     msg(level: TestMessageLevel, message?: string) {
         this.messages.push({level, message})
         if (this.renderCallback) {
@@ -71,10 +77,10 @@ export class TestContext {
         }
     }
 
-    async loadPlugin(pluginUrl: string): Promise<typeof WebAudioModule> {
+    async loadPlugin(): Promise<typeof WebAudioModule> {
         try {
             // CACHEBUSTING
-            let url = `${pluginUrl}?v=${Math.random().toString(16).substr(2)}`
+            let url = `${this.suite.runner.wamUrl}?v=${Math.random().toString(16).substr(2)}`
 
             const { default: WAM } = await import(
                 /* webpackIgnore: true */
@@ -90,7 +96,7 @@ export class TestContext {
     }
 
     async createInstance(): Promise<WebAudioModule> {
-        let wam = await this.loadPlugin(this.suite.runner.wamUrl);
+        let wam = await this.loadPlugin();
 
         if (!wam.isWebAudioModuleConstructor) {
             this.fail("wam.isWebAudioModuleConstructor should equal true")

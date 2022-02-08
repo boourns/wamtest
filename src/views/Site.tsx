@@ -8,12 +8,14 @@ export type HTMLInputEvent = Event & {target: HTMLInputElement | null}
 type SiteState = {
     state: "WAITING" | "RUNNING"
     url: string
+    runId: number
 }
 
 export class Site extends Component<any, any> {
     constructor() {
         super()
         this.state = {
+            runId: 0,
 
         }
     }
@@ -31,7 +33,7 @@ export class Site extends Component<any, any> {
     }
     
     renderRunner() {        
-        return <TestRunnerView wamUrl={this.state.url}></TestRunnerView>;
+        return <TestRunnerView runId={this.state.runId} wamUrl={this.state.url}></TestRunnerView>;
     }
 
     render() {

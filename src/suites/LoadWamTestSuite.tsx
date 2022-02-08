@@ -13,7 +13,7 @@ export class LoadWamTestSuite {
 
     async testLoadsWithoutError(t: TestContext) {
         try {
-            let wam = await t.loadPlugin(this.wamUrl);
+            let wam = await t.loadPlugin();
 
             if (!wam.isWebAudioModuleConstructor) {
                 t.fail("wam.isWebAudioModuleConstructor should equal true")

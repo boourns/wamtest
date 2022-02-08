@@ -2,15 +2,12 @@
 import { TestContext } from "../runner/TestContext";
 import Joi from "joi"
 
-const hostGroupId = "wamtest.info"
-
 const validApiVersions = [
     "2.0.0-alpha.3"
 ]
 
 export class DescriptorTestSuite {
     wamUrl: string
-    hostGroupKey?: string
 
     constructor(url: string) {
         this.wamUrl = url
